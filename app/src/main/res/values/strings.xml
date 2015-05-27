@@ -3,4 +3,8 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="pref_dream_text_key">pref_dream_text</string>
+    <string name="pref_dream_temp_key">pref_dream_temperature</string>
+    <string name="pref_dream_humi_key">pref_dream_humidity</string>
+    <string name="pref_dream_text_default">zzzZZZzzz</string>
 </resources>

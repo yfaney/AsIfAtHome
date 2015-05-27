@@ -5,8 +5,10 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
@@ -54,22 +56,17 @@ public class GcmIntentService extends IntentService {
                 // If it's a regular GCM message, do some work.
             } else if (GoogleCloudMessaging.
                     MESSAGE_TYPE_MESSAGE.equals(messageType)) {
-                // This loop represents the service doing some work.
-//                for (int i=0; i<5; i++) {
-//                    Log.i(TAG, "Working... " + (i + 1)
-//                            + "/5 @ " + SystemClock.elapsedRealtime());
-//                    try {
-//                        Thread.sleep(5000);
-//                    } catch (InterruptedException e) {
-//                    }
-//                }
-//                Log.i(TAG, "Completed work @ " + SystemClock.elapsedRealtime());
-                // Post notification of received message.
                 double lTemp = Double.parseDouble(extras.getString("temp"));
                 double lHumi = Double.parseDouble(extras.getString("humi"));
-                String title = String.format("%.2f\u2103/%.2f%%", lTemp, lHumi);
-                sendNotification(title, extras.getString("message"));
+                String title = String.format("%.1f\u2103/%.1f%%", lTemp, lHumi);
+                String message = extras.getString("message");
+                if(message != null){
+                    // Post notification of received message.
+                    sendNotification(title, extras.getString("message"));
+                }
+
                 Log.i(TAG, "Received: " + extras.toString());
+                setTextFromPreferences(lTemp, lHumi);
             }
         }
         // Release the wake lock provided by the WakefulBroadcastReceiver.
@@ -96,5 +93,14 @@ public class GcmIntentService extends IntentService {
 
         mBuilder.setContentIntent(contentIntent);
         mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+    }
+
+
+    private void setTextFromPreferences(double temp, double humi){
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putFloat(getString(R.string.pref_dream_temp_key), (float)temp);
+        editor.putFloat(getString(R.string.pref_dream_humi_key), (float)humi);
+        editor.apply();
     }
 }

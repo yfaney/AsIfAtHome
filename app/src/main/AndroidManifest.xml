@@ -33,12 +33,22 @@
             android:permission="com.google.android.c2dm.permission.SEND" >
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+
                 <category android:name="com.yfaney.asifathome" />
             </intent-filter>
         </receiver>
 
+        <service android:name=".GcmIntentService" >
+        </service>
+        <!-- This service is only used on devices with API v17+ -->
         <service
-            android:name=".GcmIntentService">
+            android:name=".MonitoringDaydreamService"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.service.dreams.DreamService" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </service>
     </application>
 
