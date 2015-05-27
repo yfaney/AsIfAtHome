@@ -1,5 +1,6 @@
 package com.yfaney.asifathome;
 
+import java.lang.ref.WeakReference;
 import java.util.Random;
 
 import android.animation.Animator;
@@ -11,6 +12,8 @@ import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.service.dreams.DreamService;
 import android.view.ViewPropertyAnimator;
@@ -27,6 +30,7 @@ import android.widget.TextView;
  */
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 public class MonitoringDaydreamService extends DreamService {
+    final static int EVENT_UPDATE_TEMP_HUMI = 1;
 
     private static final TimeInterpolator sInterpolator = new LinearInterpolator();
 
@@ -42,6 +46,7 @@ public class MonitoringDaydreamService extends DreamService {
 
     private final Random mRandom = new Random();
     private final Point mPointSize = new Point();
+    public EventHandler mHandler;
 
     private TextView mDreamTextView;
     private ViewPropertyAnimator mAnimator;
@@ -64,7 +69,8 @@ public class MonitoringDaydreamService extends DreamService {
 
         mDreamTextView = (TextView) findViewById(R.id.dream_text);
         mDreamTextView.setText(getTextFromPreferences());
-        mTask = new HTSensorDataDisplayTask(mDreamTextView);
+        mHandler = new EventHandler(this);
+        mTask = new HTSensorDataDisplayTask(mHandler);
     }
 
     @Override
@@ -93,13 +99,27 @@ public class MonitoringDaydreamService extends DreamService {
         // (for example, detach from handlers and listeners).
     }
 
+    private void handleMessage(Message message) {
+        switch(message.what){
+            case EVENT_UPDATE_TEMP_HUMI:
+            {
+                mDreamTextView.setText(getTextFromPreferences());
+                break;
+            }
+            default:
+            {
+
+            }
+        }
+    }
+
     private String getTextFromPreferences() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 //        return prefs.getString(getString(R.string.pref_dream_text_key),
 //                getString(R.string.pref_dream_text_default));
         double lTemp = prefs.getFloat(getString(R.string.pref_dream_temp_key), 0f);
         double lHumi = prefs.getFloat(getString(R.string.pref_dream_humi_key), 0f);
-        return String.format("%.1f\u2103/%.1f%%", lTemp, lHumi);
+        return String.format("%.1f\u2103 / %.1f%%", lTemp, lHumi);
     }
 
     private void startTextViewScrollAnimation() {
@@ -118,7 +138,7 @@ public class MonitoringDaydreamService extends DreamService {
 
         // Create an Animator and keep a reference to it
         mAnimator = mDreamTextView.animate().translationX(windowWidth)
-                .setDuration(3000)
+                .setDuration(5000)
                 .setStartDelay(500)
                 .setListener(mAnimListener)
                 .setInterpolator(sInterpolator);
@@ -129,19 +149,19 @@ public class MonitoringDaydreamService extends DreamService {
 
     class HTSensorDataDisplayTask extends AsyncTask<String, Process, String> {
 
-        TextView mTextView;
+        EventHandler mHander;
         boolean mRunning;
-        HTSensorDataDisplayTask(TextView textView){
+        HTSensorDataDisplayTask(EventHandler handler){
             super();
-            mTextView = textView;
+            mHandler = handler;
             mRunning = true;
         }
 
         @Override
         protected String doInBackground(String... params) {
             while(mRunning){
-                mTextView.setText(getTextFromPreferences());
                 try {
+                    mHandler.sendEmptyMessage(EVENT_UPDATE_TEMP_HUMI);
                     Thread.sleep(60000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -152,6 +172,18 @@ public class MonitoringDaydreamService extends DreamService {
 
         public void stopTask(){
             mRunning = false;
+        }
+    }
+    static class EventHandler extends Handler {
+        private WeakReference<MonitoringDaydreamService> mService = null;
+        EventHandler(MonitoringDaydreamService service){
+            mService = new WeakReference<>(service);
+        }
+
+        @Override
+        public void handleMessage(Message message){
+            MonitoringDaydreamService lService = mService.get();
+            lService.handleMessage(message);
         }
     }
 }
