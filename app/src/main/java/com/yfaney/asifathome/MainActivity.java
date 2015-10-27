@@ -1,20 +1,27 @@
 package com.yfaney.asifathome;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.google.android.gms.iid.InstanceID;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,6 +44,8 @@ public class MainActivity extends ActionBarActivity {
 
     EditText editGcmId;
 
+    private BroadcastReceiver mRegistrationBroadcastReceiver;
+
 
     /**
      * Substitute you own sender ID here. This is the project number you got
@@ -48,27 +57,52 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        context = getApplicationContext();
+//        context = getApplicationContext();
         editGcmId = (EditText)findViewById(R.id.editGcmId);
+
+        mRegistrationBroadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                SharedPreferences sharedPreferences =
+                        PreferenceManager.getDefaultSharedPreferences(context);
+//                boolean sentToken = sharedPreferences
+//                        .getBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, false);
+                regid = sharedPreferences.getString(QuickstartPreferences.GCMID, "ERROR");
+                editGcmId.setText(regid);
+            }
+        };
+
         // Check device for Play Services APK.
         if (checkPlayServices()) {
-            // If this check succeeds, proceed with normal processing.
-            // Otherwise, prompt user to get valid Play Services APK.
-            gcm = GoogleCloudMessaging.getInstance(this);
-            regid = getRegistrationId(context);
-            if (regid.isEmpty()) {
-                registerInBackground();
-            }
+//            // If this check succeeds, proceed with normal processing.
+//            // Otherwise, prompt user to get valid Play Services APK.
+//            gcm = GoogleCloudMessaging.getInstance(this);
+//            regid = getRegistrationId(context);
+//            if (regid.isEmpty()) {
+//                registerInBackground();
+//            }
+            // Start IntentService to register this application with GCM.
+            Intent intent = new Intent(this, RegistrationIntentService.class);
+            startService(intent);
+
         }
     }
 
     @Override
     protected void onResume(){
         super.onResume();
-        checkPlayServices();
+//        checkPlayServices();
+        LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
+                new IntentFilter(QuickstartPreferences.REGISTRATION_COMPLETE));
         if(regid != null){
             editGcmId.setText(regid);
         }
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
     }
 
 
@@ -122,6 +156,7 @@ public class MainActivity extends ActionBarActivity {
      * @return registration ID, or empty string if there is no existing
      *         registration ID.
      */
+    @Deprecated
     private String getRegistrationId(Context context) {
         final SharedPreferences prefs = getGCMPreferences(context);
         String registrationId = prefs.getString(PROPERTY_REG_ID, "");
@@ -144,6 +179,7 @@ public class MainActivity extends ActionBarActivity {
     /**
      * @return Application's {@code SharedPreferences}.
      */
+    @Deprecated
     private SharedPreferences getGCMPreferences(Context context) {
         // This sample app persists the registration ID in shared preferences, but
         // how you store the registration ID in your app is up to you.
@@ -171,6 +207,7 @@ public class MainActivity extends ActionBarActivity {
      * Stores the registration ID and app versionCode in the application's
      * shared preferences.
      */
+    @Deprecated
     private void registerInBackground() {
         new AsyncTask<Void, Process, String>() {
             @Override
@@ -218,6 +255,7 @@ public class MainActivity extends ActionBarActivity {
      * @param context application's context.
      * @param regId registration ID
      */
+    @Deprecated
     private void storeRegistrationId(Context context, String regId) {
         final SharedPreferences prefs = getGCMPreferences(context);
         int appVersion = getAppVersion(context);
