@@ -9,5 +9,10 @@
         android:layout_height="wrap_content"
         android:fontFamily="sans-serif-light"
         android:textSize="100sp" />
-
+    <TextView
+        android:id="@+id/dream_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif-light"
+        android:textSize="65sp" />
 </FrameLayout>

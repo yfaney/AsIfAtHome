@@ -18,7 +18,6 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
  * An {@link IntentService} subclass for handling asynchronous task requests in
  * a service on a separate handler thread.
  * <p/>
- * TODO: Customize class - update intent actions, extra parameters and static
  * helper methods.
  */
 public class GcmIntentService extends IntentService {
@@ -86,7 +85,9 @@ public class GcmIntentService extends IntentService {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_stat_hot)
+//                        .setLargeIcon()
                         .setContentTitle(title)
+                        .setPriority(NotificationCompat.PRIORITY_MIN)
                         .setStyle(new NotificationCompat.BigTextStyle()
                                 .bigText(msg))
                         .setContentText(msg);

@@ -11,8 +11,9 @@
         android:name="com.yfaney.asifathome.permission.C2D_MESSAGE"
         android:protectionLevel="signature" />
 
-    <uses-permission android:name="com.yfaney.asifathome.permission.C2D_MESSAGE" />
+    <uses-permission android:name="com.example.gcm.permission.C2D_MESSAGE" />
 
+    <!-- <uses-permission android:name="com.yfaney.asifathome.permission.C2D_MESSAGE" /> -->
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -28,17 +29,42 @@
             </intent-filter>
         </activity>
 
+        <!-- <receiver -->
+        <!-- android:name=".GcmBroadcastReceiver" -->
+        <!-- android:permission="com.google.android.c2dm.permission.SEND" > -->
+        <!-- <intent-filter> -->
+        <!-- <action android:name="com.google.android.c2dm.intent.RECEIVE" /> -->
+
+
+        <!-- <category android:name="com.yfaney.asifathome" /> -->
+        <!-- </intent-filter> -->
+        <!-- </receiver> -->
         <receiver
-            android:name=".GcmBroadcastReceiver"
+            android:name="com.google.android.gms.gcm.GcmReceiver"
+            android:exported="true"
             android:permission="com.google.android.c2dm.permission.SEND" >
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
 
-                <category android:name="com.yfaney.asifathome" />
+                <category android:name="com.example.gcm" />
             </intent-filter>
         </receiver>
 
-        <service android:name=".GcmIntentService" >
+        <!-- <service android:name=".GcmIntentService" > -->
+        <!-- </service> -->
+        <service
+            android:name=".MyGcmListenerService"
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+            </intent-filter>
+        </service>
+        <service
+            android:name=".MyInstanceIDListenerService"
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="com.google.android.gms.iid.InstanceID" />
+            </intent-filter>
         </service>
         <!-- This service is only used on devices with API v17+ -->
         <service
@@ -49,6 +75,10 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+        </service>
+        <service
+            android:name=".RegistrationIntentService"
+            android:exported="false" >
         </service>
     </application>
 
