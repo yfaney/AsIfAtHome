@@ -13,6 +13,8 @@ import com.google.android.gms.gcm.GcmPubSub;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
 
+import org.json.JSONException;
+
 import java.io.IOException;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferencesFactory;
@@ -73,7 +75,14 @@ public class RegistrationIntentService extends IntentService {
             @Override
             protected Boolean doInBackground(String... params) {
                 Log.d(TAG, "Registering: " + params[0]);
-                return CloudRESTController.registerGcmToken(params[0]);
+                try {
+                    return CloudRESTController.registerGcmToken(params[0]);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return false;
             }
 
             @Override
